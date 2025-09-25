@@ -1,0 +1,28 @@
+{
+    # Top level dirs which are recursively scanned for .lockdown.conf files
+    "base_dirs": [
+        "~",
+    ],
+
+    # Interval in seconds of when to rescan for .lockdown.conf files. Don't do
+    # this too often if base_dirs contains large amounts files/directories.
+    "rescan_interval": 10800,   # Every 30 min
+
+    # Nr of seconds after unlocking that projects should be automatically
+    # locked.
+    "lock_time": 3600,
+
+    # Do not lock a project when a user has a process whoms current working dir
+    # is somewhere in the project's directory.
+    "no_lock_when_dir_in_use": True,
+
+    # Desktop notify? Requires notify-send to be installed
+    "desktop_notify": False,
+
+    # Log level. One of "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"
+    "log_level": "WARNING",
+
+    # How often (in seconds) to inspect found lock files to see if they need to
+    # be locked.
+    "inspect_interval": 60,  # Once a minute
+}

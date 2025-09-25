@@ -1,0 +1,9 @@
+[Unit]
+Description=Lockdown daemon
+
+[Service]
+ExecStart=%h/.local/bin/lockdownd -c %h/.config/lockdown/lockdownd.conf
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
