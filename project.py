@@ -11,6 +11,7 @@ import pyrage
 
 
 logger = logger = logging.getLogger(__name__)
+
 class Project:
     """
     A project is basically a directory with a .lockdown.conf file. This object
