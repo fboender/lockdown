@@ -3,12 +3,14 @@ import random
 import getpass
 import os
 import time
+import logging
 
 import common
 
 import pyrage
 
 
+logger = logger = logging.getLogger(__name__)
 class Project:
     """
     A project is basically a directory with a .lockdown.conf file. This object
@@ -52,9 +54,9 @@ class Project:
                 fully_locked = False
 
         if fully_locked is True:
-            common.console_msg(f"Project '{self.base_dir}' is locked")
+            logger.info(f"Project '{self.base_dir}' is locked")
         else:
-            common.console_msg(f"Project '{self.base_dir}' is not (fully) locked")
+            logger.info(f"Project '{self.base_dir}' is not (fully) locked")
 
     def lock(self):
         pub_key = pyrage.x25519.Recipient.from_str(self.pub_key)
@@ -64,10 +66,10 @@ class Project:
             path_encrypted = os.path.join(self.base_dir, f"{lock_file}.age")
 
             if os.path.exists(path_encrypted):
-                common.console_msg(f"{lock_file} alrleady locked. Skipping")
+                logger.warning(f"warn {lock_file} alrleady locked. Skipping")
                 continue
 
-            common.console_msg(f"Locking {path_decrypted}")
+            logger.info(f"Locking {path_decrypted}")
             with open(path_decrypted, "rb") as fh_decrypted:
                 encrypted = pyrage.encrypt(fh_decrypted.read(), [pub_key])
                 with open(path_encrypted, "wb") as fh_cipher:
@@ -85,7 +87,7 @@ class Project:
                 print(f"{path_decrypted} not locked. Skipping")
                 continue
 
-            common.console_msg(f"Unlocking {path_encrypted}")
+            logger.info(f"Unlocking {path_encrypted}")
             with open(path_encrypted, "rb") as fh_encrypted:
                 decrypted = pyrage.decrypt(fh_encrypted.read(), [priv_key])
                 with open(path_decrypted, "wb") as fh_decrypted:

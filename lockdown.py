@@ -4,6 +4,7 @@ import os
 import sys
 import argparse
 import getpass
+import logging
 
 from project import Project
 import common
@@ -36,6 +37,7 @@ if __name__ == "__main__":
         description=__DESC__
     )
     parser.add_argument('--version', action='version', version='%(prog)s v' + __VERSION__)
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Verbose info')
 
     subparsers = parser.add_subparsers(
         title="commands",
@@ -49,10 +51,29 @@ if __name__ == "__main__":
     subparsers.add_parser("genkey", help="Generate a new key")
     args = parser.parse_args()
 
+    # Configure application logging. Default level for interactive use is INFO,
+    # because we use it to display info to the user.
+    if args.verbose is False:
+        loglevel = logging.INFO
+    else:
+        loglevel = logging.DEBUG
+
+    if args.command == "daemon":
+        fmt = '%(asctime)s %(levelname)8s %(name)s | %(message)s'
+    else:
+        fmt = '%(message)s'
+
+    formatter = logging.Formatter(fmt)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    logger = logging.getLogger(__package__)
+    logger.setLevel(loglevel)
+    logger.addHandler(handler)
+
     if args.command != "genkey":
         config_path = common.find_up(os.getcwd(), ".lockdown.conf")
         if not config_path:
-            common.console_msg("No .lockdown.conf found in current or parent dirs")
+            logger.error("No .lockdown.conf found in current or parent dirs")
             sys.exit(1)
         project = Project(config_path)
 

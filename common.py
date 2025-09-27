@@ -4,8 +4,6 @@ import os
 
 import psutil
 
-CONSOLE_MSG_SHOW = True
-
 
 def read_config(path):
     with open(path, 'r') as fh:
@@ -38,11 +36,6 @@ def find_up(start_path, filename):
         try_path = os.path.dirname(try_path)
 
     return None
-
-
-def console_msg(msg):
-    if CONSOLE_MSG_SHOW is True:
-        sys.stdout.write(f"{msg}\n")
 
 
 def user_session_in_dir(path):
