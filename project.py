@@ -98,13 +98,17 @@ class Project:
                 os.unlink(path_encrypted)
 
     def get_priv_key(self):
-        password = getpass.getpass(f"Password for {self.priv_key_path}: ")
-        with open(self.priv_key_path, "rb") as fh:
-            for line in pyrage.passphrase.decrypt(fh.read(), password).decode("utf-8").splitlines():
-                if line.startswith("AGE-SECRET-KEY-"):
-                    key = line.strip()
-                    identity = pyrage.x25519.Identity.from_str(key)
-                    return identity
+        while True:
+            try:
+                password = getpass.getpass(f"Password for {self.priv_key_path}: ")
+                with open(self.priv_key_path, "rb") as fh:
+                    for line in pyrage.passphrase.decrypt(fh.read(), password).decode("utf-8").splitlines():
+                        if line.startswith("AGE-SECRET-KEY-"):
+                            key = line.strip()
+                            identity = pyrage.x25519.Identity.from_str(key)
+                            return identity
+            except pyrage.DecryptError as err:
+                logger.error("Decryption of '%s' failed: %s", self.priv_key_path, err)
 
     def lock_age(self):
         lock_file_ages = {}
