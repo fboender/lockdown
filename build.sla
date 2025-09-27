@@ -12,7 +12,7 @@ clean () {
     rm -rf build/ dist/
     rm -f lockdown*.spec
     rm -f lockdown-*.tar.gz
-    rm README.html
+    rm -f README.html
 }
 
 readme2html () {
