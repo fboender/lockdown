@@ -77,11 +77,15 @@ if __name__ == "__main__":
             sys.exit(1)
         project = Project(config_path)
 
-    if args.command == "status":
-        project.status()
-    elif args.command == "lock":
-        project.lock()
-    elif args.command == "unlock":
-        project.unlock()
-    elif args.command == "genkey":
-        gen_key()
+    try:
+        if args.command == "status":
+            project.status()
+        elif args.command == "lock":
+            project.lock()
+        elif args.command == "unlock":
+            project.unlock()
+        elif args.command == "genkey":
+            gen_key()
+    except KeyboardInterrupt:
+        # Don't show backtrace
+        pass
