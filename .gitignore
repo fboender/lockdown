@@ -1,0 +1,3 @@
+.lockdown.conf
+__pycache__/
+contrib/example_tokens/prod.key
