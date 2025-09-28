@@ -226,5 +226,3 @@ Reload systemd and restart the service:
 * Not thoroughly tested yet.
 * Standalone bins built against GlibC v2.39, which is very recent. Binaries
   might not run everywhere.
-* Unify `lockdown` and `lockdownd` for smaller binaries.
-
