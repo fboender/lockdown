@@ -15,6 +15,15 @@ clean () {
     rm -f README.html
 }
 
+uninstall () {
+    # Remove all lockdown stuff from the host
+    rm ~/.local/bin/lockdown*
+    rm -rf ~/.config/lockdown
+    systemctl --user stop lockdown-daemon 2>/dev/null || true
+    rm -f ~/.config/systemd/user/lockdown*
+    systemctl --user daemon-reload
+}
+
 readme2html () {
     pandoc README.md --metadata title="README" -s -c ~/pandoc.css -o ~/Temp/README.html
 }
