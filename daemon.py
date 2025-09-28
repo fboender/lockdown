@@ -72,34 +72,21 @@ class Daemon:
         timer = time.time()
         while True:
             for project_dir, project in projects.items():
-                logger.debug("Inspecting '%s' for stale lock files", project_dir)
-                for lock_file, lock_file_age in project.lock_age().items():
-                    if lock_file_age > self.config["lock_time"]:
-                        logger.info("Lock file '%s' older than %s seconds old. Locking project.", lock_file, self.config["lock_time"])
+                locked = project.auto_lock(
+                    self.config["lock_time"],
+                    self.config["no_lock_when_dir_in_use"]
+                )
 
-                        if (
-                            self.config["no_lock_when_dir_in_use"] is True and
-                            common.user_session_in_dir(project_dir)
-                        ):
-                            logger.info("User has process running in '%s'. Not locking.", project_dir)
-                            # Continue to next project
-                            break
-
-                        project.lock()
-
-                        if self.config["desktop_notify"] is True:
-                            f = subprocess.run(
-                                [
-                                    "notify-send",
-                                    "-i",
-                                    "dialog-information",
-                                    "Lockdown: Project locked",
-                                    f"Project '{project_dir}' has been automatically locked"
-                                ]
-                            )
-
-                        # Continue to next project
-                        break
+                if locked is True and self.config["desktop_notify"] is True:
+                    f = subprocess.run(
+                        [
+                            "notify-send",
+                            "-i",
+                            "dialog-information",
+                            "Lockdown: Project locked",
+                            f"Project '{project_dir}' has been automatically locked"
+                        ]
+                    )
 
             # Check whether its time to rescan for .lockdown.conf files
             now = time.time()

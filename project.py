@@ -119,3 +119,24 @@ class Project:
                 age_seconds = time.time() - os.path.getmtime(full_path)
                 lock_file_ages[full_path] = age_seconds
         return lock_file_ages
+
+    def auto_lock(self, age_sec, skip_if_in_use):
+        logger.debug("Inspecting '%s' for stale lock files", self.base_dir)
+        for lock_file, lock_file_age in self.lock_age().items():
+            if lock_file_age > age_sec:
+                logger.info("Lock file '%s' older than %s seconds old. Locking project.", lock_file, age_sec)
+
+                if (
+                    skip_if_in_use and
+                    common.user_session_in_dir(self.base_dir)
+                ):
+                    logger.info("User has process running in '%s'. Not locking.", self.base_dir)
+                    # Continue to next project
+                    break
+
+                self.lock()
+                # Project was locked
+                return True
+
+        # Project was not locked
+        return False
