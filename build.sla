@@ -23,7 +23,6 @@ build_bin () {
     # Build standalone executable
     VERSION="$(grep "^__VERSION__" lockdown.py | cut -d "\"" -f2)"
     pyinstaller --log-level WARN --strip --onefile --clean ./lockdown.py
-    pyinstaller --log-level WARN --strip --onefile --clean ./lockdownd.py
 }
 
 build_release () {
@@ -34,9 +33,8 @@ build_release () {
     mkdir -p "lockdown-$VERSION/contrib/"
     cp README.md "lockdown-$VERSION"
     cp dist/lockdown "lockdown-$VERSION"
-    cp dist/lockdownd "lockdown-$VERSION"
-    cp lockdownd.conf "lockdown-$VERSION/contrib/"
-    cp contrib/lockdownd.service "lockdown-$VERSION/contrib/"
+    cp contrib/lockdown-daemon.conf "lockdown-$VERSION/contrib/"
+    cp contrib/lockdown-daemon.service "lockdown-$VERSION/contrib/"
     cp contrib/install.sh "lockdown-$VERSION/"
     tar -czf "lockdown-$VERSION.tar.gz" "lockdown-$VERSION/"
     rm -rf "lockdown-$VERSION"

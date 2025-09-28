@@ -71,7 +71,7 @@ password for the key:
     Unlocking /home/fboender/Projects/bigbrother/google_api_secret.json.age
     Unlocking /home/fboender/Projects/bigbrother/google_api_tokens.json.age
 
-An **optional background daemon** (`lockdownd`) can run in the background and
+An **optional background daemon** (`lockdown daemon`) can run in the background and
 scan for unlocked projects. It will automatically lock projects after a
 certain (configurable) period.
 
@@ -170,27 +170,54 @@ Unlock:
 An optional daemon can be ran in the background to automatically lock projects
 when they are not in use.
 
-You can run the daemon under your user account using systemd.
+To view daemon help information:
 
-Create the systemd service for your user:
+    $ lockdown daemon --help
+    usage: lockdown.py daemon [-h] [-c PATH]
 
-    $ mkdir -p ~/.config/systemd/user
-    $ mkdir -p ~/.config/lockdown
-    $ cp lockdownd.service ~/.config/systemd/user
-    $ cp lockdownd.conf.dist ~/.config/lockdown/lockdownd.conf
+    options:
+      -h, --help            show this help message and exit
+      -c PATH, --config PATH
+                            Path to configuration file. (default: ~/.config/lockdown/daemon.conf
+
+To run the daemon in the foreground (for testing purposes):
+
+    $ ./lockdown.py -v daemon -c contrib/lockdown-daemon.conf.dist
+    2025-09-27 10:45:11,844     INFO daemon | Finding directories containing .lockdown.conf files under /home/fboender
+    2025-09-27 10:45:13,688    DEBUG daemon | Loading project from '/home/fboender/Projects/bigbrother/.lockdown.conf'
+    2025-09-27 10:45:13,688    DEBUG daemon | Loading project from '/home/fboender/Projects/confluence-export/.lockdown.conf'
+    2025-09-27 10:45:13,689    DEBUG daemon | Inspecting '/home/fboender/Projects/bigbrother' for stale lock files
+    2025-09-27 10:45:13,689    DEBUG daemon | Inspecting '/home/fboender/Projects/confluence-export' for stale lock files
+
+You can run the daemon under your user account using systemd. Do to so, answer
+"y" to the question asked by `install.sh`:
+
+    Do you want to install and run the daemon? [y/N]
+
+This installs the daemon configuration in `~/.config/lockdown/daemon.conf` and
+a (user) systemd unit service file in
+`~/.config/systemd/user/lockdown-daemon.service` and enables it.
+
+You can interact with the daemon in the usual systemd way, except you need to
+add the `--user` flag.
+
+    # See systemd unit status
+    $ systemctl --user status lockdown-daemon
+
+    # View logging
+    $ journalctl --follow --user -u lockdown-daemon.service
+
+To enable verbose logging, edit
+`/.config/systemd/user/lockdown-daemon.service` and add a `-v` parameter to
+the `Exec` line:
+
+    ExecStart=%h/.local/bin/lockdown -v daemon
+
+Reload systemd and restart the service:
+
     $ systemctl --user daemon-reload
-    $ systemctl --user enable --now lockdownd.service
-    $ systemctl --user start lockdownd.service
-    $ loginctl enable-linger $USER
+    $ systemctl --user restart lockdown-daemon
 
-If you want the service the keep running after you log out, you can enable
-lingering:
-
-    $ loginctl enable-linger $USER
-
-To see the status:
-
-    $ journalctl --follow --user -u lockdownd.service
 
 <a name="notes-and-todos"></a>
 

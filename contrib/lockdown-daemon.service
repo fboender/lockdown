@@ -2,7 +2,7 @@
 Description=Lockdown daemon
 
 [Service]
-ExecStart=%h/.local/bin/lockdownd -c %h/.config/lockdown/lockdownd.conf
+ExecStart=%h/.local/bin/lockdown daemon
 Restart=on-failure
 
 [Install]

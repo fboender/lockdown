@@ -1,10 +1,7 @@
-#!/bin/env python3
-
 import os
 import sys
-import logging
-import argparse
 import time
+import logging
 import subprocess
 
 from project import Project
@@ -12,25 +9,27 @@ import common
 
 import pyrage
 
-__VERSION__ = "0.1"
-__DESC__ = "Automatically lock (encrypt) credentials in projects"
+
+logger = logger = logging.getLogger(__name__)
 
 
-class AutoLockerError(Exception):
+class DaemonError(Exception):
     pass
 
-class AutoLocker:
+
+class Daemon:
     def __init__(self, config_path):
         self.config_path = config_path
         try:
             self.config = common.read_config(self.config_path)
         except FileNotFoundError:
             cwd = os.getcwd()
-            raise AutoLockerError(f"Configuration 'lockdownd.conf' not found in '{cwd}'", 1)
+            raise DaemonError(f"Configuration file '{self.config_path}' not found", 1)
 
     def find_project_dirs(self, base_dirs):
         project_dirs = []
         for base_dir in base_dirs:
+            base_dir = os.path.expanduser(base_dir)
             logger.info("Finding directories containing .lockdown.conf files under %s", base_dir)
             for subdir, dirs, files in os.walk(base_dir):
                 if ".lockdown.conf" in files:
@@ -43,7 +42,11 @@ class AutoLocker:
         for project_dir in project_dirs:
             lockdown_conf_path = os.path.join(project_dir, ".lockdown.conf")
             logger.debug("Loading project from '%s'", lockdown_conf_path)
-            project = Project(lockdown_conf_path)
+            try:
+                project = Project(lockdown_conf_path)
+            except Exception as err:
+                logger.error("Invalid .lockdown.conf file '%s': %s", lockdown_conf_path, err)
+                continue
             projects[project_dir] = project
 
         return projects
@@ -91,35 +94,3 @@ class AutoLocker:
                 timer = now
 
             time.sleep(self.config["inspect_interval"])
-
-
-if __name__ == "__main__":
-    common.CONSOLE_MSG_SHOW = False
-    parser = argparse.ArgumentParser(
-        description=__DESC__
-    )
-    parser.add_argument("--version", action="version", version="%(prog)s v" + __VERSION__)
-    parser.add_argument("-c", "--config", metavar="PATH", dest="config", type=str, default=None, help="Path to configuration file")
-    args = parser.parse_args()
-
-    handler = logging.StreamHandler(sys.stderr)
-    fmt = '%(asctime)s %(levelname)8s %(name)s | %(message)s'
-    formatter = logging.Formatter(fmt)
-    handler.setFormatter(formatter)
-    logger = logging.getLogger('lockdownd')
-    logger.addHandler(handler)
-
-    print(args)
-    if args.config is not None:
-        config_path = args.config
-    else:
-        config_path = "lockdownd.conf"
-    print(config_path)
-    try:
-        auto_locker = AutoLocker(config_path)
-    except AutoLockerError as err:
-        sys.stderr.write(f"{err.args[0]}\n")
-        sys.exit(err.args[1])
-    logger.setLevel(auto_locker.config["log_level"])
-    auto_locker.run()
-

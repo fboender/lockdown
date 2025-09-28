@@ -20,7 +20,30 @@ if [ "$PREFIX" = "/usr/local" ] && [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+echo "Installing 'lockdown' binary in $BINDIR"
 install -m 755 lockdown "$BINDIR"
-echo "'lockdown' installed in $BINDIR"
-install -m 755 lockdownd "$BINDIR"
-echo "'lockdownd' installed in $BINDIR"
+
+if [ "$(which systemctl)" = "" ]; then
+    echo "systemctl not found. Daemon support not available." >&2
+else
+    read -p "Do you want to install and run the daemon? [y/N]" INSTALL_DAEMON
+    if [ "$INSTALL_DAEMON" = "y" ] || [ "$INSTALL_DAEMON" = "Y" ]; then
+        echo "Installing lockdown daemon configuration in: ~/.config/lockdown/daemon.conf"
+        install -D -m 644 contrib/lockdown-daemon.conf ~/.config/lockdown/daemon.conf
+
+        echo "Installing lockdown daemon systemd service: ~/.config/systemd/user/lockdown-daemon.service"
+        install -Dm644 contrib/lockdown-daemon.service ~/.config/systemd/user
+
+        echo "Enabling lockdown-daemon service"
+        systemctl --user daemon-reload
+        systemctl --user enable --now lockdown-daemon.service
+        systemctl --user start lockdown-daemon.service
+        loginctl enable-linger $USER
+
+        echo "Daemon installed. Configuration file:"
+        echo
+        echo "  ~/.config/lockdown/daemon.conf"
+        echo
+        echo "Check the README.md for how to interact with it"
+    fi
+fi
