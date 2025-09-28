@@ -67,7 +67,7 @@ class Project:
             path_encrypted = os.path.join(self.base_dir, f"{lock_file}.age")
 
             if os.path.exists(path_encrypted):
-                logger.warning(f"warn {lock_file} alrleady locked. Skipping")
+                logger.warning(f"{lock_file} already locked. Skipping")
                 continue
 
             logger.info(f"Locking {path_decrypted}")
