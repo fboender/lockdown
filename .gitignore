@@ -1,3 +1,9 @@
 .lockdown.conf
 __pycache__/
 contrib/example_tokens/prod.key
+build/
+dist/
+lockdown-*/
+lockdown-*.tar.gz
+lockdown.spec
+README.html
