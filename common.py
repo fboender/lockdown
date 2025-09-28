@@ -6,6 +6,10 @@ import psutil
 
 
 def read_config(path):
+    """
+    Read a configuration file in python literals format. You can use comments,
+    [], (), tripple-quotes strings, etc.
+    """
     with open(path, 'r') as fh:
         try:
             conf = ast.literal_eval(fh.read())
@@ -23,6 +27,7 @@ def read_config(path):
                 pass
             sys.exit(1)
 
+
 def find_up(start_path, filename):
     """
     Traverse up directories and try to find 'filename' file.
@@ -39,6 +44,10 @@ def find_up(start_path, filename):
 
 
 def user_session_in_dir(path):
+    """
+    Go through all the user's processes and check if any of their current
+    working directories is under `path`.
+    """
     for p in psutil.process_iter(["pid", "cwd", "name", "username"]):
         try:
             if p.info["username"] == psutil.Process().username():

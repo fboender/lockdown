@@ -18,6 +18,10 @@ class DaemonError(Exception):
 
 
 class Daemon:
+    """
+    Lockdown daemon. Runs in the background and periodically scans for unlocked
+    projects and lock them.
+    """
     def __init__(self, config_path):
         self.config_path = config_path
         try:
@@ -27,6 +31,10 @@ class Daemon:
             raise DaemonError(f"Configuration file '{self.config_path}' not found", 1)
 
     def find_project_dirs(self, base_dirs):
+        """
+        Given a list of directories ("base_dirs" from the configuration file),
+        recursively scan those dirs for .lockdown.conf files.
+        """
         project_dirs = []
         for base_dir in base_dirs:
             base_dir = os.path.expanduser(base_dir)
@@ -38,6 +46,10 @@ class Daemon:
         return project_dirs
 
     def load_projects(self, project_dirs):
+        """
+        Load all projects (dirs with .lockdown.conf files in them) so we can
+        periodically check for unlocked projects in the run() method.
+        """
         projects = {}
         for project_dir in project_dirs:
             lockdown_conf_path = os.path.join(project_dir, ".lockdown.conf")
@@ -52,6 +64,9 @@ class Daemon:
         return projects
 
     def run(self):
+        """
+        Run the daemon.
+        """
         projects = self.load_projects(self.find_project_dirs(self.config["base_dirs"]))
 
         timer = time.time()
