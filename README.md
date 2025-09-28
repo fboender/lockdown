@@ -66,7 +66,7 @@ To unlock, use the `lockdown unlock` command. You will have to enter the
 password for the key:
 
     ~/Projects/bigbrother $ lockdown unlock
-    Password for /home/fboender/.lockdown.key: 
+    Password for /home/fboender/.lockdown.key:
     Unlocking /home/fboender/Projects/bigbrother/config.py.age
     Unlocking /home/fboender/Projects/bigbrother/google_api_secret.json.age
     Unlocking /home/fboender/Projects/bigbrother/google_api_tokens.json.age
