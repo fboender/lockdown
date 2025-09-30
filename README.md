@@ -102,6 +102,8 @@ the system.
 
 # Getting started
 
+## Installation
+
 Download [the latest release](https://github.com/fboender/lockdown/releases)
 and install Lockdown:
 
@@ -117,6 +119,8 @@ If you only want to install it for your own user:
     $ PREFIX="$HOME/.local" ./install.sh
 
 Make sure that `$HOME/.local/bin` is in your PATH in this case.
+
+## Setup
 
 Generate a new key:
 
@@ -146,6 +150,8 @@ If the private key is not stored in `~/.lockdown.key`, you can specify the
         "priv_key_path": "~/Projects/myproject/.lockdown.key",
     }
 
+## Usage
+
 You can now lock and unlock your project's secrets:
 
     $ lockdown lock
@@ -161,7 +167,6 @@ Unlock:
     $ lockdown unlock
     Password for /home/user/.lockdown.key:
     Unlocking /path/to/project/jira-export.conf.age
-
 
 <a name="daemon"></a>
 
