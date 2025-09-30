@@ -218,6 +218,21 @@ Reload systemd and restart the service:
     $ systemctl --user daemon-reload
     $ systemctl --user restart lockdown-daemon
 
+## Prompt indicator
+
+To add a locked indicator to your prompt when you change to the directory of a
+project, add the following to your `~/.bashrc`:
+
+    prompt_lockdown_locked() {
+        if [ -f ".lockdown.conf" ]; then
+            if [ "$(lockdown status | grep "is locked$")" != "" ]; then
+                echo "🔒"
+            fi
+        fi
+    }
+
+    PS1="$(prompt_lockdown_locked) $PS1"
+
 
 <a name="notes-and-todos"></a>
 
