@@ -156,6 +156,9 @@ available on the system.
 
 # Installation
 
+Lockdown is distributed as a standalone linux x86-64 binary. There currently
+is no support for Windows or MacOS.
+
 Download [the latest release](https://github.com/fboender/lockdown/releases)
 and install Lockdown:
 
