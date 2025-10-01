@@ -57,3 +57,13 @@ def user_session_in_dir(path):
             continue
 
     return False
+
+def xdg_config_home(path):
+    xdg_config_home = None
+
+    if "XDG_CONFIG_HOME" in os.environ:
+        xdg_config_home = os.environ["XDG_CONFIG_HOME"]
+    else:
+        xdg_config_home = "~/.config"
+
+    return os.path.expanduser(os.path.join(xdg_config_home, path))
