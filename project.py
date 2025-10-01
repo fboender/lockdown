@@ -12,6 +12,11 @@ import pyrage
 
 logger = logger = logging.getLogger(__name__)
 
+
+class ProjectError(Exception):
+    pass
+
+
 class Project:
     """
     A project is basically a directory with a .lockdown.conf file. This object
@@ -22,30 +27,111 @@ class Project:
         self.config_path = config_path
         self.base_dir = os.path.dirname(os.path.expanduser(self.config_path))
         self.config = common.read_config(self.config_path)
-        self.pub_key = self.config["pub_key"]
-        self.priv_key_path = self.find_priv_key(self.base_dir)
+        self.pub_key_path = self.get_pub_key_path()  # Can be None
+        self.pub_key = self.get_pub_key()
+        self.priv_key_path = self.get_priv_key_path()
         self.lock_files = self.config["lock_files"]
 
-    def find_priv_key(self, base_dir):
-        priv_key_path = None
+    def get_priv_key_path(self):
+        """
+        Try various locations for a private key and return the first one that
+        is found.
+        """
+        try_paths = []
 
+        # Path in configuration
         if "priv_key_path" in self.config:
             if self.config["priv_key_path"].startswith("/"):
-                priv_key_path = self.config["priv_key_path"]
+                # Absolute path
+                try_paths.append(self.config["priv_key_path"])
             else:
-                priv_key_path = os.path.join(self.base_dir, os.path.expanduser(self.config["priv_key_path"]))
+                # Relative to base dir
+                try_paths.append(os.path.join(self.base_path, self.config["priv_key_path"]))
+
+                # Also try expand user path
+                try_paths.append(os.path.expanduser(self.config["priv_key_path"]))
+
+        # File relative to base dir
+        try_paths.append(os.path.join(self.base_dir, ".lockdown.key"))
+
+        # Default location (~/.config/lockdown
+        try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.key")))
+
+        for try_path in try_paths:
+            if os.path.exists(try_path):
+                return try_path
+
+        # No private key found anywhere
+        err_msg = f"No private key defined in {self.config_path} or found in " + ", ".join(try_paths)
+        raise ProjectError(err_msg, 1)
+
+    def get_pub_key(self):
+        """
+        Try various locations for a public key and return the contents of the
+        first public key found.
+        """
+        if "pub_key" in self.config:
+            return self.config["pub_key"]
         else:
-            priv_key_path = common.find_up(base_dir, ".lockdown.key")
+            pub_key_path = self.get_pub_key_path()
+            logging.debug("Loading public key from '%s'", pub_key_path)
+            try:
+                with open(pub_key_path, "r") as fh:
+                    return fh.read().strip()
+            except FileNotFoundError:
+                pass
 
-        if not os.path.exists(priv_key_path):
-            raise FileNotFoundError(f"No such file or directory: {priv_key_path}")
+        # No public key found anywhere
+        err_msg = f"No public key defined in {self.config_path} or found in " + ", ".join(try_paths)
+        raise ProjectError(err_msg, 2)
 
-        if priv_key_path is None:
-            raise FileNotFoundError("Cannot find a .lockdown.key file in the current or any of the parent directories")
+    def get_pub_key_path(self):
+        try_paths = []
 
-        return priv_key_path
+        # Path in configuration
+        if "pub_key_path" in self.config:
+            if self.config["pub_key_path"].startswith("/"):
+                # Absolute path
+                try_paths.append(self.config["pub_key_path"])
+            else:
+                # Relative to base dir
+                try_paths.append(os.path.join(self.base_path, self.config["pub_key_path"]))
+
+                # Also try expand user path
+                try_paths.append(os.path.expanduser(self.config["pub_key_path"]))
+
+        # File relative to base dir
+        try_paths.append(os.path.join(self.base_dir, ".lockdown.pub"))
+
+        # Default location (~/.config/lockdown
+        try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.pub")))
+
+        for try_path in try_paths:
+            if os.path.exists(try_path):
+                return try_path
+
+    def decrypt_priv_key(self):
+        """
+        Ask the user for a password and decrypt the private key.
+
+        Do NOT use this without a TTY attached to the process.
+        """
+        while True:
+            try:
+                password = getpass.getpass(f"Password for {self.priv_key_path}: ")
+                with open(self.priv_key_path, "rb") as fh:
+                    for line in pyrage.passphrase.decrypt(fh.read(), password).decode("utf-8").splitlines():
+                        if line.startswith("AGE-SECRET-KEY-"):
+                            key = line.strip()
+                            identity = pyrage.x25519.Identity.from_str(key)
+                            return identity
+            except pyrage.DecryptError as err:
+                logger.error("Decryption of '%s' failed: %s", self.priv_key_path, err)
 
     def status(self):
+        """
+        Show the status of the current project.
+        """
         fully_locked = True
 
         for lock_file in self.lock_files:
@@ -60,6 +146,10 @@ class Project:
             logger.info(f"Project '{self.base_dir}' is not (fully) locked")
 
     def lock(self):
+        """
+        Lock all lock files in the project using the public key
+        """
+        logger.info("Using public key '%s'", self.pub_key_path)
         pub_key = pyrage.x25519.Recipient.from_str(self.pub_key)
 
         for lock_file in self.lock_files:
@@ -67,10 +157,10 @@ class Project:
             path_encrypted = os.path.join(self.base_dir, f"{lock_file}.age")
 
             if os.path.exists(path_encrypted):
-                logger.warning(f"{lock_file} already locked. Skipping")
+                logger.warning(f"'{lock_file}' already locked. Skipping")
                 continue
 
-            logger.info(f"Locking {path_decrypted}")
+            logger.info(f"Locking '{lock_file}'")
             with open(path_decrypted, "rb") as fh_decrypted:
                 encrypted = pyrage.encrypt(fh_decrypted.read(), [pub_key])
                 with open(path_encrypted, "wb") as fh_cipher:
@@ -78,17 +168,22 @@ class Project:
                 os.unlink(path_decrypted)
 
     def unlock(self):
-        priv_key = self.get_priv_key()
+        """
+        Unlock all the lock files in this project using the private key
+
+        Do NOT use this without a TTY attached to the process
+        """
+        priv_key = self.decrypt_priv_key()
 
         for lock_file in self.lock_files:
             path_decrypted = os.path.join(self.base_dir, f"{lock_file}")
             path_encrypted = os.path.join(self.base_dir, f"{lock_file}.age")
 
             if not os.path.exists(path_encrypted):
-                print(f"{path_decrypted} not locked. Skipping")
+                print(f"'{lock_file}' not locked. Skipping")
                 continue
 
-            logger.info(f"Unlocking {path_encrypted}")
+            logger.info(f"Unlocking '{lock_file}'")
             with open(path_encrypted, "rb") as fh_encrypted:
                 decrypted = pyrage.decrypt(fh_encrypted.read(), [priv_key])
                 with open(path_decrypted, "wb") as fh_decrypted:
@@ -98,20 +193,19 @@ class Project:
                 # secure wipe these days.
                 os.unlink(path_encrypted)
 
-    def get_priv_key(self):
-        while True:
-            try:
-                password = getpass.getpass(f"Password for {self.priv_key_path}: ")
-                with open(self.priv_key_path, "rb") as fh:
-                    for line in pyrage.passphrase.decrypt(fh.read(), password).decode("utf-8").splitlines():
-                        if line.startswith("AGE-SECRET-KEY-"):
-                            key = line.strip()
-                            identity = pyrage.x25519.Identity.from_str(key)
-                            return identity
-            except pyrage.DecryptError as err:
-                logger.error("Decryption of '%s' failed: %s", self.priv_key_path, err)
-
     def lock_age(self):
+        """
+        Return a dict with every lock file (as the key of the dict), with the
+        value being the mtime of the file in seconds.
+
+        When lock files are unlocked, they are newly created from the .age
+        files, so their mtime indicated how long ago they were unlocked. This
+        is used by the daemon to automatically lock them.
+
+        If the user edits one of the lock files, the mtime gets reset, but
+        we'll accept that since that does indicate the user is actively working
+        on the project.
+        """
         lock_file_ages = {}
         for lock_file in self.lock_files:
             full_path = os.path.join(self.base_dir, lock_file)
@@ -121,6 +215,10 @@ class Project:
         return lock_file_ages
 
     def auto_lock(self, age_sec, skip_if_in_use):
+        """
+        Automatically lock this project, depending on `age_sec`. See
+        `lock_age()` for more info.
+        """
         logger.debug("Inspecting '%s' for stale lock files", self.base_dir)
         for lock_file, lock_file_age in self.lock_age().items():
             if lock_file_age > age_sec:

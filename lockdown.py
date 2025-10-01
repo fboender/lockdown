@@ -33,6 +33,7 @@ if __name__ == "__main__":
     sp_lock = subparsers.add_parser("lock", help="Lock project")
     sp_unlock = subparsers.add_parser("unlock", help="Unlock project")
     sp_genkey = subparsers.add_parser("genkey", help="Generate a new key")
+    sp_genkey.add_argument("-o", "--output", metavar="NAME", dest="output", type=str, default="lockdown", help="Output file name for private and public key (don't add an extension)")
     sp_daemon = subparsers.add_parser("daemon", help="Run lockdown background daemon")
     sp_daemon.add_argument("-c", "--config", metavar="PATH", dest="config", type=str, default=DAEMON_CONF_PATH, help="Path to configuration file. (default: ~/.config/lockdown/daemon.conf")
     args = parser.parse_args()
@@ -71,6 +72,8 @@ if __name__ == "__main__":
             project.lock()
         elif args.command == "unlock":
             project.unlock()
+        elif args.command == "genkey":
+            gen_key(args.output)
         elif args.command == "daemon":
             daemon = Daemon(args.config)
             daemon.run()
