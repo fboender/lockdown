@@ -60,15 +60,15 @@ if __name__ == "__main__":
     logger.setLevel(loglevel)
     logger.addHandler(handler)
 
-    # Find and load project, if command requires it
-    if args.command in ("status", "lock", "unlock"):
-        config_path = common.find_up(os.getcwd(), ".lockdown.conf")
-        if not config_path:
-            logger.error("No .lockdown.conf found in current or parent dirs")
-            sys.exit(1)
-        project = Project(config_path)
-
     try:
+        # Find and load project, if command requires it
+        if args.command in ("status", "lock", "unlock"):
+            config_path = common.find_up(os.getcwd(), ".lockdown.conf")
+            if not config_path:
+                logger.error("No .lockdown.conf found in current or parent dirs")
+                sys.exit(1)
+            project = Project(config_path)
+
         if args.command == "status":
             project.status()
         elif args.command == "lock":
