@@ -40,6 +40,7 @@ A birds-eye view of how it works:
     * [Default keys](#default_keys)</li>
     * [Additional keys](#additional_keys)</li>
     * [Daemon](#daemon)</li>
+* [Security considerations](#security-considerations)</li>
 * [Notes and Todos](#notes-and-todos)</li>
 
 <a name="why"></a>
@@ -302,6 +303,54 @@ project, add the following to your `~/.bashrc`:
 
     PS1="$(prompt_lockdown_locked) $PS1"
 
+<a name="security-considerations"></a>
+
+# Security considerations
+
+## Pyrage library
+
+Lockdown uses a pure-python implementation of
+[Age](https://github.com/FiloSottile/age) called
+[pyrage](https://github.com/woodruffw/pyrage). There is no information
+available on how well tested this is, and whether its crypto has been
+reviewed. But hey, I guess badly encrypted tokens are better than plain text
+tokens.
+
+## Password-protected private keys
+
+Age private keys are not encrypted by default. I encrypt them using Age's own
+symmetric encryption, essentially "putting a password on the private key". I
+assume I've done this correctly, but it has not been reviewed.
+
+## Keep private key passwords in your head, not on disk
+
+I *strongly* encourage you to **NEVER** store the password to Lockdown private
+keys *anywhere* on the same system as where the private keys live. Keep it in
+your mind, not in your password manager or whatever. If a credential stealer
+nabs both the Lockdown keys and a plaintext dump of your password manager, the
+show is over.
+
+## Attack vectors
+
+Lockdown makes *no* attempt to thwart anything running as your user from
+obtaining the passwords to private keys, other than never storing passwords on
+disk. There's no fancy memory protection or whipping.
+
+Basically if a process dumps the memory of a lockdown process while you're
+entering a private key's password, it's probably game over. See also the next
+item.
+
+## Use separate keys for important things
+
+The security model of Lockdown is mostly to protect "idle" tokens from being
+exfiltrated in plain-text, because they were on your system unprotected.
+However, if you protect all your tokens with a *single* private key, and you
+use that once to unlock a specific project, an attacker could use the same
+private key to unlock all your other secrets.
+
+To reduce the fallout from such a situation, you should use separate
+private/public keys for important tokens.
+
 
 <a name="notes-and-todos"></a>
 
@@ -309,6 +358,9 @@ project, add the following to your `~/.bashrc`:
 
 * Not thoroughly tested yet.
 * Standalone bins built against GlibC v2.39, which is very recent. Binaries
-  might not run everywhere.
+  might not run everywhere. **Update:** v0.3 has been build against an older
+  version (v2.31)
 * Only linux support for now, but should (theoretically) be able to run under
   windows and macos
+* Currently no easy way to change the password of a private key, although you
+  can just decrypt and re-encrypt with the `age` cli (symmetric mode)
