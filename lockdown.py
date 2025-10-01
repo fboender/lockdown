@@ -8,6 +8,7 @@ import logging
 from project import Project
 from daemon import Daemon, DaemonError
 from genkey import gen_key
+from genconf import gen_conf
 import common
 
 
@@ -34,6 +35,8 @@ if __name__ == "__main__":
     sp_unlock = subparsers.add_parser("unlock", help="Unlock project")
     sp_genkey = subparsers.add_parser("genkey", help="Generate a new key")
     sp_genkey.add_argument("-o", "--output", metavar="NAME", dest="output", type=str, default="lockdown", help="Output file name for private and public key (don't add an extension)")
+    sp_genconf = subparsers.add_parser("genconf", help="Generate a new .lockdown.conf")
+    sp_genconf.add_argument(metavar='FILE', dest="files", type=str, nargs='+', help='Files to lock')
     sp_daemon = subparsers.add_parser("daemon", help="Run lockdown background daemon")
     sp_daemon.add_argument("-c", "--config", metavar="PATH", dest="config", type=str, default=DAEMON_CONF_PATH, help="Path to configuration file. (default: ~/.config/lockdown/daemon.conf")
     args = parser.parse_args()
@@ -74,11 +77,11 @@ if __name__ == "__main__":
             project.unlock()
         elif args.command == "genkey":
             gen_key(args.output)
+        elif args.command == "genconf":
+            gen_conf(args.files)
         elif args.command == "daemon":
             daemon = Daemon(args.config)
             daemon.run()
-        elif args.command == "genkey":
-            gen_key()
     except DaemonError as err:
         logging.error(err.args[0])
     except KeyboardInterrupt:
