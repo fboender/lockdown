@@ -3,6 +3,7 @@ __pycache__/
 contrib/example_tokens/prod.key
 build/
 dist/
+.python-version
 lockdown-*/
 lockdown-*.tar.gz
 lockdown.spec
