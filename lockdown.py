@@ -5,7 +5,7 @@ import sys
 import argparse
 import logging
 
-from project import Project
+from project import Project, ProjectError
 from daemon import Daemon, DaemonError
 from genkey import gen_key
 from genconf import gen_conf
@@ -83,6 +83,8 @@ if __name__ == "__main__":
             daemon = Daemon(args.config)
             daemon.run()
     except DaemonError as err:
+        logging.error(err.args[0])
+    except ProjectError as err:
         logging.error(err.args[0])
     except KeyboardInterrupt:
         # Don't show backtrace
