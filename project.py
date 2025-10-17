@@ -4,6 +4,7 @@ import getpass
 import os
 import time
 import logging
+import glob
 
 import common
 
@@ -30,7 +31,35 @@ class Project:
         self.pub_key_path = self.get_pub_key_path()  # Can be None
         self.pub_key = self.get_pub_key()
         self.priv_key_path = self.get_priv_key_path()
-        self.lock_files = self.config["lock_files"]
+        self.lock_files = self.get_lock_files(self.config["lock_files"])
+
+    def get_lock_files(self, lock_files):
+        """
+        Return a list of lock files for this project. Supports globbing
+        ("**/*.conf").
+        """
+        results = set()
+
+        # Unlocked files
+        for lock_file_unlocked in lock_files:
+            path = os.path.join(self.base_dir, lock_file_unlocked)
+            for f in glob.glob(path, recursive=True):
+                results.add(f)
+
+        # We also look for lockfiles that are already locked. This is so we can
+        # support globbing ('*'). Without this, we wouldn't find files for
+        # globs (e.g. "*.yaml" wouldn't find anything because the files are
+        # called "*.yaml.age")
+        for lock_file_locked in lock_files:
+            path = os.path.join(self.base_dir, f"{lock_file_locked}.age")
+            for f in glob.glob(path, recursive=True):
+                results.add(f[:-4])  # Add file without .age extension
+
+        # Display when verbose
+        for result in results:
+            logger.debug(f"Using lock file: {result}")
+
+        return results
 
     def get_priv_key_path(self):
         """

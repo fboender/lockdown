@@ -73,6 +73,7 @@ work.
 * Unlock multiple secrets in one go
 * Manually lock secrets or automatically with a background daemon
 * Use a single key, or optionally specify a different key per project
+* Recursive globbing for lock files ala Git is supported (e.g. `**/*.yml`)
 
 <a name="how-it-works"></a>
 
@@ -241,6 +242,32 @@ specify an absolute path. You can refer to your home directory using `~/`:
 
 
 <a name="daemon"></a>
+
+## Lock file globbing (wildcards)
+
+You can use wildcards (globbing) to have lockdown dynamically find out which
+files to lock and unlock. You must quote the lock file when using `genconf`:
+
+    $ lockdown genconf '*.yml'
+
+    $ tail .lockdown.conf
+    # List of files to lock/unlock
+    "lock_files": [
+        "*.yml",
+    ],
+
+    $ lockdown -v status
+    Loading public key from '/home/fboender/.config/lockdown/lockdown.pub'
+    Using lock file: /path/to/project/cred_prod.yml
+    Using lock file: /path/to/project/cred_acc.yml
+    /path/to/project/cred_prod.yml is not locked
+    /path/to/project/cred_acc.yml is not locked
+    Project '/path/to/project' is not (fully) locked
+    
+Recursive globbing is also supported. This will find matching files anywhere
+in the project:
+
+    $ lockdown genconf '**/*.yml'
 
 ## Daemon
 
