@@ -103,7 +103,7 @@ class Project:
             return self.config["pub_key"]
         else:
             pub_key_path = self.get_pub_key_path()
-            logging.debug("Loading public key from '%s'", pub_key_path)
+            logger.debug("Loading public key from '%s'", pub_key_path)
             try:
                 with open(pub_key_path, "r") as fh:
                     return fh.read().strip()
@@ -167,7 +167,10 @@ class Project:
             path_decrypted = os.path.join(self.base_dir, f"{lock_file}")
 
             if os.path.exists(path_decrypted):
+                logger.debug("%s is not locked", lock_file)
                 fully_locked = False
+            else:
+                logger.debug("%s is locked", lock_file)
 
         if fully_locked is True:
             logger.info(f"Project '{self.base_dir}' is locked")
