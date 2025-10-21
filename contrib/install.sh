@@ -134,6 +134,7 @@ else
 
     echo "Creating configuration directory $CONF_DIR"
     mkdir -p "$CONF_DIR"
+    chmod 700 "$CONF_DIR"
 
     if [ "$FLAG_GENERATE_KEY" -eq 1 ]; then
         echo "Generating keys in '$CONF_DIR'"

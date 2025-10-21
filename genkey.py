@@ -30,8 +30,11 @@ def gen_key(output_base_name):
     sys.stdout.write("\n")
     with open(f"{output_base_name}.key", "wb") as fh:
         fh.write(encrypted_key)
+    os.chmod(f"{output_base_name}.key", 0o600)
+
     sys.stdout.write(f"Wrote encrypted key to '{output_base_name}.key'\n")
 
     with open(f"{output_base_name}.pub", "w") as fh:
         fh.write(str(public_key))
+    os.chmod(f"{output_base_name}.pub", 0o644)
     sys.stdout.write(f"Wrote public key to '{output_base_name}.pub'\n")
