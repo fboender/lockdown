@@ -5,6 +5,7 @@ import os
 import time
 import logging
 import glob
+import stat
 
 import common
 
@@ -32,6 +33,9 @@ class Project:
         self.pub_key = self.get_pub_key()
         self.priv_key_path = self.get_priv_key_path()
         self.lock_files = self.get_lock_files(self.config["lock_files"])
+
+        if self.priv_key_readable_by_others(self.priv_key_path):
+            logger.warning("WARNING: '%s' is readable by others. You probably want to change its permissions to 700", self.priv_key_path)
 
     def get_lock_files(self, lock_files):
         """
@@ -138,6 +142,16 @@ class Project:
         for try_path in try_paths:
             if os.path.exists(try_path):
                 return try_path
+
+    def priv_key_readable_by_others(self, path):
+        """
+        Check if the private key is readable by anybody other than the current
+        user or group.
+        """
+        st = os.stat(path)
+        key_readable = bool(st.st_mode & (stat.S_IROTH))
+
+        return key_readable
 
     def decrypt_priv_key(self):
         """
