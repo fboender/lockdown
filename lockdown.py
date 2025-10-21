@@ -12,7 +12,7 @@ from genconf import gen_conf
 import common
 
 
-__VERSION__ = "0.4"
+__VERSION__ = "0.5"
 __DESC__ = "Quickly lock and unlock (encrypt, decrypt) credentials in projects"
 DAEMON_CONF_PATH=os.path.expanduser("~/.config/lockdown/daemon.conf")
 
