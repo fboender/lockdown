@@ -70,6 +70,16 @@ if [ -f "$BIN_PATH" ]; then
 fi
 
 if [ "$UPGRADE" = "" ] || [ "$UPGRADE" = "y" ] || [ "$UPGRADE" = "Y" ]; then
+    # Check permissions on existing config dir, as they were not properly set
+    # by the installer previously
+    PERMS="$(stat -c '%A' "$CONF_DIR" | cut -c8-10)"
+    if [ "$PERMS" != "---" ]; then
+        read -p "Config dir '$CONF_DIR' is readable by others. Do you want to fix it and set it's mode to 700? [Y/n]" FIX_PERMS
+    fi
+    if [ "$FIX_PERMS" = "" ] || [ "$FIX_PERMS" = "y" ] || [ "$FIX_PERMS" = "Y" ]; then
+        chmod 700 "$CONF_DIR"
+    fi
+
     echo "Upgrading 'lockdown' binary in $BIN_DIR"
     install -m 755 lockdown "$BIN_DIR"
 
