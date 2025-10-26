@@ -17,7 +17,7 @@ clean () {
 
 readme2html () {
     # Convert README.md to README.html
-    pandoc README.md --metadata title="README" -s -c contrib/pandoc-github.css -o ~/Temp/README.html
+    pandoc README.md --metadata title="README" -s -c contrib/pandoc-github.css -o README.html
 }
 
 build_bin () {
