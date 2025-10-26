@@ -342,7 +342,7 @@ project, add the following to your `~/.bashrc`:
 
 # Security considerations
 
-## Failure modes
+## Failure modes and usage considerations
 
 Lockdown is a **last line of defense**. You should **not** use it as your
 primary means of protecting secrets. Please take the following things into
@@ -352,10 +352,19 @@ consideration:
   installation) significantly reduces the security of Lockdown. An attacker
   that knows Lockdown is running can manipulate the binary, the daemon and the
   daemon configuration file. System wide installation is recommended
+
 * Lockdown is meant to protect against drive-by credential harvesting and
   cannot protect against an attacker that has prolonged access to locked
   projects. The longer an attacker has access to your account, the higher the
   risk of failure
+
+* Lockdown makes *no* attempt to thwart anything running as your user from
+  obtaining the passwords to private keys, other than never storing passwords
+  on disk. There's no fancy memory protection or wiping.
+
+* Basically if a process dumps the memory of a Lockdown process while you're
+  entering a private key's password, it's probably game over. See also the
+  next item.
 
 You should take into consideration the following advice:
 
@@ -363,53 +372,38 @@ You should take into consideration the following advice:
   extended periods of time, rather than using Lockdown to protect them.
   Lockdown should *only* be used to protect projects you expect to actively
   work in the short-term future.
+
 * Run all untrusted code (including development libraries and frameworks) in a
   sandboxed environment *per* project.
 
-## Pyrage library
+* I *strongly* encourage you to **NEVER** store the password to Lockdown
+  private keys *anywhere* on the same system as where the private keys live.
+  Keep it in your mind, not in your password manager or whatever. If a
+  credential stealer nabs both the Lockdown keys and a plain text dump of your
+  password manager, the show is over.
 
-Lockdown uses a pure-python implementation of
-[Age](https://github.com/FiloSottile/age) called
-[pyrage](https://github.com/woodruffw/pyrage). There is no information
-available on how well tested this is, and whether its crypto has been
-reviewed. But hey, I guess badly encrypted tokens are better than plain text
-tokens.
+* Use separate keys for important things. The security model of Lockdown is
+  mostly to protect "idle" tokens from being exfiltrated in plain text,
+  because they were on your system unprotected. However, if you protect all
+  your tokens with a *single* private key, and you use that once to unlock a
+  specific project, an attacker could use the same private key to unlock all
+  your other secrets.
 
-## Password-protected private keys
+  To reduce the fallout from such a situation, you should use separate
+  private/public keys for important tokens.
 
-Age private keys are not encrypted by default. I encrypt them using Age's own
-symmetric encryption, essentially "putting a password on the private key". I
-assume I've done this correctly, but it has not been reviewed.
+## Implementation considerations
 
-## Keep private key passwords in your head, not on disk
-
-I *strongly* encourage you to **NEVER** store the password to Lockdown private
-keys *anywhere* on the same system as where the private keys live. Keep it in
-your mind, not in your password manager or whatever. If a credential stealer
-nabs both the Lockdown keys and a plaintext dump of your password manager, the
-show is over.
-
-## Attack vectors
-
-Lockdown makes *no* attempt to thwart anything running as your user from
-obtaining the passwords to private keys, other than never storing passwords on
-disk. There's no fancy memory protection or whipping.
-
-Basically if a process dumps the memory of a lockdown process while you're
-entering a private key's password, it's probably game over. See also the next
-item.
-
-## Use separate keys for important things
-
-The security model of Lockdown is mostly to protect "idle" tokens from being
-exfiltrated in plain-text, because they were on your system unprotected.
-However, if you protect all your tokens with a *single* private key, and you
-use that once to unlock a specific project, an attacker could use the same
-private key to unlock all your other secrets.
-
-To reduce the fallout from such a situation, you should use separate
-private/public keys for important tokens.
-
+* **Pyrage library**. Lockdown uses a pure-python implementation of
+  [Age](https://github.com/FiloSottile/age) called
+  [pyrage](https://github.com/woodruffw/pyrage). There is no information
+  available on how well tested this is, and whether its crypto has been
+  reviewed. But hey, I guess badly encrypted tokens are better than plain text
+  tokens.
+* **Password-protected private keys**. Age private keys are not encrypted by
+  default. I encrypt them using Age's own symmetric encryption, essentially
+  "putting a password on the private key". I assume I've done this correctly,
+  but it has not been reviewed.
 
 <a name="notes-and-todos"></a>
 
