@@ -210,9 +210,19 @@ class Project:
 
             logger.info(f"Locking '{lock_file}'")
             with open(path_decrypted, "rb") as fh_decrypted:
+                # Create new encrypted file
                 encrypted = pyrage.encrypt(fh_decrypted.read(), [pub_key])
                 with open(path_encrypted, "wb") as fh_cipher:
                     fh_cipher.write(encrypted)
+
+                # Preserve ownership and permissions, for when running as
+                # system daemon
+                orig_stat = os.stat(path_decrypted)
+                os.chown(path_encrypted, orig_stat.st_uid, orig_stat.st_gid)
+                os.chmod(path_encrypted, stat.S_IMODE(orig_stat.st_mode))
+
+                # We just unlink (rm) the original file. There's no point in
+                # secure wipe these days.
                 os.unlink(path_decrypted)
 
     def unlock(self):
@@ -233,12 +243,18 @@ class Project:
 
             logger.info(f"Unlocking '{lock_file}'")
             with open(path_encrypted, "rb") as fh_encrypted:
+                # Create new decrypted file
                 decrypted = pyrage.decrypt(fh_encrypted.read(), [priv_key])
                 with open(path_decrypted, "wb") as fh_decrypted:
                     fh_decrypted.write(decrypted)
 
-                # We just unlink (rm) the original file. There's no point in
-                # secure wipe these days.
+                # Preserve ownership and permissions, for when running as
+                # system daemon
+                orig_stat = os.stat(path_encrypted)
+                os.chown(path_decrypted, orig_stat.st_uid, orig_stat.st_gid)
+                os.chmod(path_decrypted, stat.S_IMODE(orig_stat.st_mode))
+
+                # Remove encrypted file
                 os.unlink(path_encrypted)
 
     def lock_age(self):
