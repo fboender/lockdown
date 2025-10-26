@@ -1,6 +1,7 @@
 import getpass
 import sys
 import os
+import hashlib
 
 import pyrage
 
@@ -26,6 +27,7 @@ def gen_key(output_base_name):
     public_key = identity.to_public()
     private_key = str(identity).encode("ascii")
     encrypted_key = pyrage.passphrase.encrypt(private_key, passwd1)
+    fingerprint = hashlib.sha256(str(public_key).encode("utf-8")).hexdigest()
 
     sys.stdout.write("\n")
     with open(f"{output_base_name}.key", "wb") as fh:
@@ -37,4 +39,4 @@ def gen_key(output_base_name):
     with open(f"{output_base_name}.pub", "w") as fh:
         fh.write(str(public_key))
     os.chmod(f"{output_base_name}.pub", 0o644)
-    sys.stdout.write(f"Wrote public key to '{output_base_name}.pub'\n")
+    sys.stdout.write(f"Wrote public key to '{output_base_name}.pub'. Fingerprint: {fingerprint.upper()[:16]}\n")

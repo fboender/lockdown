@@ -392,6 +392,16 @@ You should take into consideration the following advice:
   To reduce the fallout from such a situation, you should use separate
   private/public keys for important tokens.
 
+* Verify the fingerprint of the public key when locking projects. When
+  generating a private and public key, Lockdown shows the fingerprint of the
+  public key. When a project is locked, the fingerprint is also shown. You
+  should verify that the fingerprints match, or an attacker could replace your
+  public key with their own. When you unlock and relock a project, the project
+  will be locked with the attacker's public key, meaning they can also unlock
+  the project with the private key they control. There is no way to
+  automatically verify the public key, since any place where we could store
+  this information is also writable by an attacker.
+
 ## Implementation considerations
 
 * **Pyrage library**. Lockdown uses a pure-python implementation of

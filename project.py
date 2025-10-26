@@ -6,6 +6,7 @@ import time
 import logging
 import glob
 import stat
+import hashlib
 
 import common
 
@@ -195,8 +196,9 @@ class Project:
         """
         Lock all lock files in the project using the public key
         """
-        logger.info("Using public key '%s'", self.pub_key_path)
         pub_key = pyrage.x25519.Recipient.from_str(self.pub_key)
+        fingerprint = hashlib.sha256(str(pub_key).encode("utf-8")).hexdigest()
+        logger.info("Using public key '%s' (%s)", self.pub_key_path, fingerprint.upper()[0:16])
 
         for lock_file in self.lock_files:
             path_decrypted = os.path.join(self.base_dir, f"{lock_file}")
