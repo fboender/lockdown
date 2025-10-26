@@ -63,13 +63,37 @@ SYSTEMD_SERVICE_NAME="lockdown.service"
 SYSTEMD_SERVICE_PATH="$SYSTEMD_DIR/$SYSTEMD_SERVICE_NAME"
 
 #
+# Give a warning when installing Lockdown locally
+#
+if [ "$FLAG_GLOBAL" -ne 1 ]; then
+    C_RED="\033[1;31m"
+    C_RESET="$(tput sgr0)"
+    echo
+    echo "${C_RED}!!! WARNING !!!${C_RESET}"
+    echo
+    echo "You are installing Lockdown locally for just your user."
+    echo
+    echo "Running Lockdown under your own user (compared to a system wide installation)"
+    echo "significantly reduces the security of Lockdown. An attacker that knows Lockdown"
+    echo "is running can manipulate the binary, the daemon and the daemon configuration"
+    echo "file. System wide installation is recommended."
+    echo
+    echo "To install Lockdown globally:"
+    echo
+    echo "    $ sudo ./install.sh --global"
+    echo
+fi
+
+#
 # Check if already installed
 #
+INSTALLED=0
 if [ -f "$BIN_PATH" ]; then
+    INSTALLED=1
     read -p "It looks like Lockdown is already installed. Do you want to upgrade? [Y/n]" UPGRADE
 fi
 
-if [ "$UPGRADE" = "" ] || [ "$UPGRADE" = "y" ] || [ "$UPGRADE" = "Y" ]; then
+if [ "$INSTALLED" -eq 1 ] && [ "$UPGRADE" = "" ] || [ "$UPGRADE" = "y" ] || [ "$UPGRADE" = "Y" ]; then
     # Check permissions on existing config dir, as they were not properly set
     # by the installer previously
     PERMS="$(stat -c '%A' "$CONF_DIR" | cut -c8-10)"
