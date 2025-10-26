@@ -5,6 +5,11 @@ project after a certain time.
 It uses [Age](https://github.com/FiloSottile/age) for encryption, so no hassle
 with GnuPG setup or anything.
 
+> [!WARNING]
+> Please read the [Security Considerations](#security-considerations) chapter
+> to learn about Lockdown's failure modes and other things you should be aware
+> of.
+
 A birds-eye view of how it works:
 
     $ ls
@@ -336,6 +341,30 @@ project, add the following to your `~/.bashrc`:
 <a name="security-considerations"></a>
 
 # Security considerations
+
+## Failure modes
+
+Lockdown is a **last line of defense**. You should **not** use it as your
+primary means of protecting secrets. Please take the following things into
+consideration:
+
+* Running Lockdown under your own user (compared to a system wide
+  installation) significantly reduces the security of Lockdown. An attacker
+  that knows Lockdown is running can manipulate the binary, the daemon and the
+  daemon configuration file. System wide installation is recommended
+* Lockdown is meant to protect against drive-by credential harvesting and
+  cannot protect against an attacker that has prolonged access to locked
+  projects. The longer an attacker has access to your account, the higher the
+  risk of failure
+
+You should take into consideration the following advice:
+
+* Remove credentials from your system when you do not require them for
+  extended periods of time, rather than using Lockdown to protect them.
+  Lockdown should *only* be used to protect projects you expect to actively
+  work in the short-term future.
+* Run all untrusted code (including development libraries and frameworks) in a
+  sandboxed environment *per* project.
 
 ## Pyrage library
 
