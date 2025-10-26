@@ -19,7 +19,7 @@ A birds-eye view of how it works:
     Generated '.lockdown.conf' in current dir
 
     $ lockdown lock
-    Using public key '/home/fboender/.config/lockdown/lockdown.pub'
+    Using public key '/home/fboender/.config/lockdown/lockdown.pub' (0FEE8A7A3E6C7EBC)
     Locking 'secret.json'
     Locking 'google_api_secret.json'
 
@@ -100,7 +100,7 @@ Lockdown searches the current and parent dirs until it finds a
 We can lock the credentials:
 
     $ lockdown lock
-    Using public key '/home/fboender/.config/lockdown/lockdown.pub'
+    Using public key '/home/fboender/.config/lockdown/lockdown.pub' (0FEE8A7A3E6C7EBC)
     Locking 'secret.json'
     Locking 'google_api_secret.json'
     Locking 'google_api_tokens.json'
@@ -193,7 +193,7 @@ Go to a project's directory and create a lockdown configuration file.
     Generated '.lockdown.conf' in current dir
 
     $ lockdown lock
-    Using public key '/home/fboender/.config/lockdown/lockdown.pub'
+    Using public key '/home/fboender/.config/lockdown/lockdown.pub' (0FEE8A7A3E6C7EBC)
     Locking 'secret.json'
     Locking 'google_api_secret.json'
 
@@ -419,10 +419,7 @@ You should take into consideration the following advice:
 
 # Notes and Todos
 
-* Not thoroughly tested yet.
-* Standalone bins built against GlibC v2.39, which is very recent. Binaries
-  might not run everywhere. **Update:** v0.3 has been build against an older
-  version (v2.31)
+* Lockdown daemon should verify public keys somehow
 * Only linux support for now, but should (theoretically) be able to run under
   windows and macos
 * Currently no easy way to change the password of a private key, although you
