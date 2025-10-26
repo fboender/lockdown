@@ -114,7 +114,7 @@ This takes the configured files, and encrypts them using an
     google_api_secret.json.age
     google_api_tokens.json.age
 
-To unlock:
+To unlock, you will need to provide the password to the private key:
 
     $ lockdown unlock
     Password for /home/fboender/.config/lockdown/lockdown.key:
