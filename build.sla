@@ -22,6 +22,13 @@ readme2html () {
 
 build_bin () {
     # Build standalone executable
+
+    # Check glib version
+    GLIBC_VERSION="$(ldd --version | head -n1 | awk '{print $NF}')"
+    if [ "$GLIBC_VERSION" != "2.31" ]; then
+        echo "Building against too recent glibc version (v$GLIBC_VERSION). Expecting v2.31." >&2
+        exit 1
+    fi
     VERSION="$(grep "^__VERSION__" lockdown.py | cut -d "\"" -f2)"
     pyinstaller --log-level WARN --strip --onefile --clean ./lockdown.py
 }
