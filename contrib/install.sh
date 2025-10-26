@@ -116,6 +116,13 @@ else
     #
     # Get some user feedback
     #
+    if [ "$INSTALLED" -eq 1 ]; then
+        read -p "Do you want to reinstall Lockdown? [y/N]" REINSTALL
+        if [ "$REINSTALL" != "y" ] && [ "$REINSTALL" != "Y" ]; then
+            echo "Aborting installation."
+            exit 0
+        fi
+    fi
     echo "Please answer some questions before we begin installation:"
     echo
     read -p "  Do you want to generate default keys? [Y/n]" GENERATE_KEY
