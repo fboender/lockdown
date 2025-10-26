@@ -25,17 +25,25 @@ build_bin () {
 
     # Check glib version
     GLIBC_VERSION="$(ldd --version | head -n1 | awk '{print $NF}')"
-    if [ "$GLIBC_VERSION" != "2.31" ]; then
+    if [ "$GLIBC_VERSION" != "2.31" ] && [ "$1" != "--force" ]; then
         echo "Building against too recent glibc version (v$GLIBC_VERSION). Expecting v2.31." >&2
         exit 1
     fi
     VERSION="$(grep "^__VERSION__" lockdown.py | cut -d "\"" -f2)"
     pyinstaller --log-level WARN --strip --onefile --clean ./lockdown.py
+
+    # Sometimes the build fails for whatever reason and binary doesn't work. So
+    # we test it
+    dist/lockdown --version | grep "^lockdown" >/dev/null
+    if [ "$?" -ne 0 ]; then
+        echo "Binary failed. Try again." >&2
+        exit 2
+    fi
 }
 
 build_release () {
     # Build release file
-    build_bin
+    build_bin $*
 
     VERSION="$(grep "^__VERSION__" lockdown.py | cut -d "\"" -f2)"
     mkdir -p "lockdown-$VERSION/contrib/"
@@ -51,5 +59,5 @@ build_release () {
 
 build () {
     # Build everything
-    build_release
+    build_release $*
 }
