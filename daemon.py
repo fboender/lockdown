@@ -74,7 +74,8 @@ class Daemon:
             for project_dir, project in projects.items():
                 locked = project.auto_lock(
                     self.config["lock_time"],
-                    self.config["no_lock_when_dir_in_use"]
+                    self.config["no_lock_when_dir_in_use"],
+                    self.config.get("force_lock_time", 0)
                 )
 
                 if locked is True and self.config["desktop_notify"] is True:
