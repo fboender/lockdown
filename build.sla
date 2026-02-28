@@ -13,6 +13,18 @@ clean () {
     rm -f lockdown*.spec
     rm -f lockdown-*.tar.gz
     rm -f README.html
+    rm -rf test/
+}
+
+test () {
+    mkdir -p test
+    cd test
+    [ ! -f ".lockdown.key" ] && ../lockdown.py genkey -o .lockdown
+    [ ! -f "token.age" ] && echo "5up3rs3cr3t" > token
+    [ ! -f ".lockdown.conf" ] && ../lockdown.py genconf token
+    ../lockdown.py lock
+    ../lockdown.py status
+    ../lockdown.py unlock
 }
 
 readme2html () {
