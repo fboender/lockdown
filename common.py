@@ -20,7 +20,7 @@ def read_config(path):
                 src, line_no, char_no, line = rest
                 sys.stderr.write(f"Invalid configuration file: {msg} on line {line_no}:\n\n")
                 sys.stderr.write(f"    {line.strip()}\n")
-                sys.stderr.write(f"    {" " * (char_no - 9)}^\n\n")
+                sys.stderr.write(f"    {' ' * (char_no - 9)}^\n\n")
                 sys.stderr.write("The actual error may be higher up.\n")
             except ValueError:
                 sys.stderr.write(f"Invalid configuration file: {err}\n")
