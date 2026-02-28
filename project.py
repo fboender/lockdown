@@ -30,8 +30,7 @@ class Project:
         self.config_path = config_path
         self.base_dir = os.path.dirname(os.path.expanduser(self.config_path))
         self.config = common.read_config(self.config_path)
-        self.pub_key_path = self.get_pub_key_path()  # Can be None
-        self.pub_key = self.get_pub_key()
+        self.pub_key_path = self.get_pub_key_path()
         self.priv_key_path = self.get_priv_key_path()
         self.lock_files = self.get_lock_files(self.config["lock_files"])
 
@@ -66,10 +65,43 @@ class Project:
 
         return results
 
+    def get_pub_key_path(self):
+        """
+        Try various locations for a public key and return the first one found.
+        If none are found, raise a ProjectError.
+        """
+        try_paths = []
+
+        # Path in configuration
+        if "pub_key_path" in self.config:
+            if self.config["pub_key_path"].startswith("/"):
+                # Absolute path
+                try_paths.append(self.config["pub_key_path"])
+            else:
+                # Relative to base dir
+                try_paths.append(os.path.join(self.base_path, self.config["pub_key_path"]))
+
+                # Also try expand user path
+                try_paths.append(os.path.expanduser(self.config["pub_key_path"]))
+
+        # File relative to base dir
+        try_paths.append(os.path.join(self.base_dir, ".lockdown.pub"))
+
+        # Default location (~/.config/lockdown
+        try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.pub")))
+
+        for try_path in try_paths:
+            if os.path.exists(try_path):
+                return try_path
+
+        # No public key found anywhere
+        err_msg = f"No public key defined in {self.config_path} or found in " + ", ".join(try_paths)
+        raise ProjectError(err_msg, 2)
+
     def get_priv_key_path(self):
         """
-        Try various locations for a private key and return the first one that
-        is found.
+        Try various locations for a private key and return the first one found.
+        If none are found, raise a ProjectError.
         """
         try_paths = []
 
@@ -97,52 +129,7 @@ class Project:
 
         # No private key found anywhere
         err_msg = f"No private key defined in {self.config_path} or found in " + ", ".join(try_paths)
-        raise ProjectError(err_msg, 1)
-
-    def get_pub_key(self):
-        """
-        Try various locations for a public key and return the contents of the
-        first public key found.
-        """
-        if "pub_key" in self.config:
-            return self.config["pub_key"]
-        else:
-            pub_key_path = self.get_pub_key_path()
-            logger.debug("Loading public key from '%s'", pub_key_path)
-            try:
-                with open(pub_key_path, "r") as fh:
-                    return fh.read().strip()
-            except FileNotFoundError:
-                pass
-
-        # No public key found anywhere
-        err_msg = f"No public key defined in {self.config_path} or found in " + ", ".join(try_paths)
         raise ProjectError(err_msg, 2)
-
-    def get_pub_key_path(self):
-        try_paths = []
-
-        # Path in configuration
-        if "pub_key_path" in self.config:
-            if self.config["pub_key_path"].startswith("/"):
-                # Absolute path
-                try_paths.append(self.config["pub_key_path"])
-            else:
-                # Relative to base dir
-                try_paths.append(os.path.join(self.base_path, self.config["pub_key_path"]))
-
-                # Also try expand user path
-                try_paths.append(os.path.expanduser(self.config["pub_key_path"]))
-
-        # File relative to base dir
-        try_paths.append(os.path.join(self.base_dir, ".lockdown.pub"))
-
-        # Default location (~/.config/lockdown
-        try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.pub")))
-
-        for try_path in try_paths:
-            if os.path.exists(try_path):
-                return try_path
 
     def priv_key_readable_by_others(self, path):
         """
@@ -196,7 +183,8 @@ class Project:
         """
         Lock all lock files in the project using the public key
         """
-        pub_key = pyrage.x25519.Recipient.from_str(self.pub_key)
+        with open(self.pub_key_path, "r") as fh_pubkey:
+            pub_key = pyrage.x25519.Recipient.from_str(fh_pubkey.read().strip())
         fingerprint = hashlib.sha256(str(pub_key).encode("utf-8")).hexdigest()
         logger.info("Using public key '%s' (%s)", self.pub_key_path, fingerprint.upper()[0:16])
 
