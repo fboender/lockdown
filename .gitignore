@@ -9,3 +9,4 @@ lockdown-*.tar.gz
 lockdown.spec
 README.html
 test/
+.envrc
