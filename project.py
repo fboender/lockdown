@@ -87,8 +87,9 @@ class Project:
         # File relative to base dir
         try_paths.append(os.path.join(self.base_dir, ".lockdown.pub"))
 
-        # Default location (~/.config/lockdown
+        # Default locations
         try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.pub")))
+        try_paths.append("/etc/lockdown/lockdown.pub")
 
         for try_path in try_paths:
             if os.path.exists(try_path):
@@ -120,8 +121,9 @@ class Project:
         # File relative to base dir
         try_paths.append(os.path.join(self.base_dir, ".lockdown.key"))
 
-        # Default location (~/.config/lockdown
+        # Default locations
         try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.key")))
+        try_paths.append("/etc/lockdown/lockdown.key")
 
         for try_path in try_paths:
             if os.path.exists(try_path):
