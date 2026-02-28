@@ -17,6 +17,8 @@ clean () {
 }
 
 test () {
+    # Test lockdown
+    # Generates a fake project and tests core lockdown functionality
     mkdir -p test
     cd test
     [ ! -f ".lockdown.key" ] && ../lockdown.py genkey -o .lockdown
