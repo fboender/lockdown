@@ -64,7 +64,7 @@ build_release () {
     cp README.md "lockdown-$VERSION"
     cp dist/lockdown "lockdown-$VERSION"
     cp contrib/lockdown-daemon.conf "lockdown-$VERSION/contrib/"
-    cp contrib/lockdown.service "lockdown-$VERSION/contrib/"
+    cp contrib/lockdown.service-* "lockdown-$VERSION/contrib/"
     cp contrib/install.sh "lockdown-$VERSION/"
     cp contrib/uninstall.sh "lockdown-$VERSION/"
     tar -czf "lockdown-$VERSION.tar.gz" "lockdown-$VERSION/"

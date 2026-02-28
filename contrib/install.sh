@@ -48,12 +48,14 @@ fi
 
 if [ "$FLAG_GLOBAL" -eq 1 ]; then
     BASE_BIN_DIR="/usr/local"
-    BASE_CONF_DIR="/etc/"
+    BASE_CONF_DIR="/etc"
     SYSTEMD_DIR="$BASE_CONF_DIR/systemd/system"
+    SYSTEMD_SERVICE_FILE="lockdown.service-global"
 else
     BASE_BIN_DIR="$HOME/.local"
     BASE_CONF_DIR="${XDG_CONFIG_HOME:=$HOME/.config}"
     SYSTEMD_DIR="$BASE_CONF_DIR/systemd/user"
+    SYSTEMD_SERVICE_FILE="lockdown.service-user"
 fi
 
 BIN_DIR="$BASE_BIN_DIR/bin"
@@ -193,7 +195,7 @@ else
             install -D -m 644 contrib/lockdown-daemon.conf $CONF_DIR/daemon.conf
 
             echo "Installing lockdown daemon systemd service: $SYSTEMD_SERVICE_PATH"
-            install -Dm644 "contrib/$SYSTEMD_SERVICE_NAME" $SYSTEMD_DIR
+            install -Dm644 "contrib/$SYSTEMD_SERVICE_FILE" $SYSTEMD_DIR/$SYSTEMD_SERVICE_NAME
 
             echo "Enabling lockdown service"
             if [ "$FLAG_GLOBAL" -eq 1 ]; then
