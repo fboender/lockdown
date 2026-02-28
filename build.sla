@@ -37,8 +37,8 @@ build_bin () {
 
     # Check glib version
     GLIBC_VERSION="$(ldd --version | head -n1 | awk '{print $NF}')"
-    if [ "$GLIBC_VERSION" != "2.31" ] && [ "$1" != "--force" ]; then
-        echo "Building against too recent glibc version (v$GLIBC_VERSION). Expecting v2.31." >&2
+    if [ "$GLIBC_VERSION" != "2.35" ] && [ "$1" != "--force" ]; then
+        echo "Building against too recent glibc version (v$GLIBC_VERSION). Expecting v2.35." >&2
         exit 1
     fi
     VERSION="$(grep "^__VERSION__" lockdown.py | cut -d "\"" -f2)"
