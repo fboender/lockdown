@@ -214,4 +214,8 @@ else
     fi
 
     echo "Installation complete"
+
+    if [ "$FLAG_GLOBAL" -eq 1 ]; then
+        echo "You REALLY should edit $CONF_DIR/daemon.conf! Don't forget to restart the system service afterwards"
+    fi
 fi
