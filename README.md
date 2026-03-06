@@ -35,6 +35,7 @@ A birds-eye view of how it works:
 > Lockdown is a work in progress. See the [Notes and Todos](#notes-and-todos)
 > section for more information.
 
+
 # Table of Contents
 
 * [Why?](#why)</li>
@@ -81,6 +82,7 @@ work.
 * Recursive globbing for lock files ala Git is supported (e.g. `**/*.yml`)
 
 <a name="how-it-works"></a>
+
 
 # How it works
 
@@ -160,6 +162,7 @@ available on the system.
 
 <a name="installation"></a>
 
+
 # Installation
 
 Lockdown is distributed as a standalone linux x86-64 binary. There currently
@@ -173,6 +176,7 @@ and install Lockdown:
     $ ./install.sh
 
 <a name="usage"></a>
+
 
 # Usage
 
@@ -268,7 +272,7 @@ files to lock and unlock. You must quote the lock file when using `genconf`:
     /path/to/project/cred_prod.yml is not locked
     /path/to/project/cred_acc.yml is not locked
     Project '/path/to/project' is not (fully) locked
-    
+
 Recursive globbing is also supported. This will find matching files anywhere
 in the project:
 
@@ -346,6 +350,7 @@ project, add the following to your `~/.bashrc`:
 
 <a name="security-considerations"></a>
 
+
 # Security considerations
 
 ## Failure modes and usage considerations
@@ -422,6 +427,7 @@ You should take into consideration the following advice:
   but it has not been reviewed.
 
 <a name="notes-and-todos"></a>
+
 
 # Notes and Todos
 
