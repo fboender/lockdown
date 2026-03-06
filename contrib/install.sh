@@ -113,7 +113,7 @@ if [ "$INSTALLED" -eq 1 ] && [ "$UPGRADE" = "" ] || [ "$UPGRADE" = "y" ] || [ "$
     echo "Not installing daemon config in $CONF_DIR"
     echo "Not installing systemd service file $SYSTEMD_SERVICE_PATH"
 
-    echo "Upgrade done"
+    echo "Upgrade done. If you are running the daemon, you should restart it."
 else
     #
     # Get some user feedback
