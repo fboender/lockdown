@@ -16,29 +16,29 @@ def gen_conf(files):
         fh.write(f"""{{
     # Optional path to private key.
     #
-    # If not specified, Lockdown looks in the same directory as the
-    # .lockdown.conf file for a '.lockdown.key'.  Otherwise, it uses
-    # '~/.config/lockdown/lockdown.key'
+    # If not specified, Lockdown looks (in order) in other places for the key:
+    #
+    #  - Same directory as the .lockdown.conf (.lockdown.key)
+    #  - The config directory in the home of the user that owns the
+    #    .lockdown.conf file (~/.config/lockdown/lockdown.key). This is used
+    #    when running in daemon mode as root.
+    #  - The XDG_CONFIG_DIR of the current user
+    #    (~/.config/lockdown/lockdown.key)
+    #  - /etc/lockdown/lockdown.key
 
-    # "priv_key_path": "/path/to/lockdown.key",
+    #"priv_key_path": "/path/to/lockdown.key",
 
 
     # Optional path to public key.
     #
-    # If not specified, Lockdown looks in the same directory as the
-    # .lockdown.conf file for a '.lockdown.pub'. Otherwise, it uses
-    # '~/.config/lockdown/lockdown.pub'
+    # If not specified, Lockdown looks (in order) in other places for the key.
+    # This works the same as the private key section above.
 
-    # "pub_key_path": "/path/to/lockdown.pub",
-
-
-    # Optionally you can define the pub key inline in the configuration. This
-    # will always take precedence of any other configuration option or path.
-
-    # "pub_key": "age1rtnnps27z8wf79fnftlm5qjyt4rd4hsdhvhuy85d94zykpzhzf7s24sdx9",
+    #"pub_key_path": "/path/to/lockdown.pub",
 
 
     # List of files to lock/unlock
+
     "lock_files": [
 """)
         for file in files:

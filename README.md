@@ -293,6 +293,12 @@ way:
 The daemon configuration is installed in `/etc/lockdown/daemon.conf` and a
 systemd unit service file in `/etc/systemd/system/lockdown.service`.
 
+The daemon will use the owner of any `.lockdown.conf` files it finds to search
+for public / private keys. So if a `.lockdown.conf` file is found with owner
+"testuser", it will first look in the same directory as where the
+`.lockdown.conf` file was found for keys, and then try testuser's home dir
+(~testuser/.config/lockdown/...)
+
 ### Local user install
 
 If you installed Lockdown for just your user, the daemon runs under your user

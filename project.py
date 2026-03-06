@@ -7,6 +7,7 @@ import logging
 import glob
 import stat
 import hashlib
+import pwd
 
 import common
 
@@ -30,8 +31,8 @@ class Project:
         self.config_path = config_path
         self.base_dir = os.path.dirname(os.path.expanduser(self.config_path))
         self.config = common.read_config(self.config_path)
-        self.pub_key_path = self.get_pub_key_path()
-        self.priv_key_path = self.get_priv_key_path()
+        self.pub_key_path = self.get_key_path(config_path, "pub_key_path", "lockdown.pub")
+        self.priv_key_path = self.get_key_path(config_path, "priv_key_path", "lockdown.key")
         self.lock_files = self.get_lock_files(self.config["lock_files"])
 
         if self.priv_key_readable_by_others(self.priv_key_path):
@@ -61,76 +62,68 @@ class Project:
 
         # Display when verbose
         for result in results:
-            logger.debug(f"Using lock file: {result}")
+            logger.debug(f"File to (un)lock: {result}")
 
         return results
 
-    def get_pub_key_path(self):
+    def get_key_path(self, config_path, config_key, fname):
         """
-        Try various locations for a public key and return the first one found.
+        Try various locations for a public / private key and return the first
+        one found.
+
         If none are found, raise a ProjectError.
         """
         try_paths = []
 
-        # Path in configuration
-        if "pub_key_path" in self.config:
-            if self.config["pub_key_path"].startswith("/"):
+        # Path specified in the configuration file are always tried first
+        if config_key in self.config:
+            if self.config[config_key].startswith("/"):
                 # Absolute path
-                try_paths.append(self.config["pub_key_path"])
+                try_paths.append(self.config[config_key])
             else:
                 # Relative to base dir
-                try_paths.append(os.path.join(self.base_path, self.config["pub_key_path"]))
+                try_paths.append(os.path.join(self.base_path, self.config[config_key]))
 
                 # Also try expand user path
-                try_paths.append(os.path.expanduser(self.config["pub_key_path"]))
+                try_paths.append(os.path.expanduser(self.config[config_key]))
 
-        # File relative to base dir
-        try_paths.append(os.path.join(self.base_dir, ".lockdown.pub"))
+        # Look for key relative to the directory where the .lockdown.conf is found.
+        try_paths.append(os.path.join(self.base_dir, fname))
 
-        # Default locations
-        try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.pub")))
-        try_paths.append("/etc/lockdown/lockdown.pub")
+        # The lockdown daemon can run as root, preventing malicious software
+        # from easily messing with configs or binaries if running as a normal
+        # user.
+        #
+        # However, it then can't look in $HOME for public/private keys, as that
+        # would be /root, not the actual home dir of the user whoms project
+        # should be locked.
+        #
+        # So we check the ownership of the .lockdown.conf file, and use that
+        # user's home dir instead. Unfortunately, we can't use XDG config dirs
+        # for that user, as there is no way to obtain the XDG_CONFIG_DIR for a
+        # different user. So we just default to ~/.config, which should be fine
+        # for the vast majority of users.
+        owner_uid = os.stat(config_path).st_uid
+        owner_home_dir = pwd.getpwuid(owner_uid).pw_dir
+        try_paths.append(os.path.join(owner_home_dir, ".config", "lockdown", fname))
 
+        # Also try the current user's XDG config directory (~/.config/lockdown, usually)
+        try_paths.append(common.xdg_config_home(os.path.join("lockdown", fname)))
+
+        # Finally try a system-wide key
+        try_paths.append(os.path.join("/", "etc", "lockdown", fname))
+
+        # Remove any duplicates.
+        try_paths = list(dict.fromkeys(try_paths))
+
+        logger.debug("Looking for %s. Trying paths: %s", fname, try_paths)
+        # Try each path and return the first one that works
         for try_path in try_paths:
             if os.path.exists(try_path):
                 return try_path
 
-        # No public key found anywhere
-        err_msg = f"No public key defined in {self.config_path} or found in " + ", ".join(try_paths)
-        raise ProjectError(err_msg, 2)
-
-    def get_priv_key_path(self):
-        """
-        Try various locations for a private key and return the first one found.
-        If none are found, raise a ProjectError.
-        """
-        try_paths = []
-
-        # Path in configuration
-        if "priv_key_path" in self.config:
-            if self.config["priv_key_path"].startswith("/"):
-                # Absolute path
-                try_paths.append(self.config["priv_key_path"])
-            else:
-                # Relative to base dir
-                try_paths.append(os.path.join(self.base_path, self.config["priv_key_path"]))
-
-                # Also try expand user path
-                try_paths.append(os.path.expanduser(self.config["priv_key_path"]))
-
-        # File relative to base dir
-        try_paths.append(os.path.join(self.base_dir, ".lockdown.key"))
-
-        # Default locations
-        try_paths.append(common.xdg_config_home(os.path.join("lockdown", "lockdown.key")))
-        try_paths.append("/etc/lockdown/lockdown.key")
-
-        for try_path in try_paths:
-            if os.path.exists(try_path):
-                return try_path
-
-        # No private key found anywhere
-        err_msg = f"No private key defined in {self.config_path} or found in " + ", ".join(try_paths)
+        # No key found
+        err_msg = f"No key path defined in {self.config_path} (or the file does not exist) or found in " + ", ".join(try_paths)
         raise ProjectError(err_msg, 2)
 
     def priv_key_readable_by_others(self, path):
