@@ -41,6 +41,7 @@ class Daemon:
             logger.info("Finding directories containing .lockdown.conf files under %s", base_dir)
             for subdir, dirs, files in os.walk(base_dir):
                 if ".lockdown.conf" in files:
+                    logger.info("Found: %s", os.path.join(subdir, ".lockdown.conf"))
                     project_dirs.append(subdir)
 
         return project_dirs
