@@ -48,6 +48,7 @@ A birds-eye view of how it works:
     * [Daemon](#daemon)</li>
 * [Security considerations](#security-considerations)</li>
 * [Notes and Todos](#notes-and-todos)</li>
+* [License, status and contributing](#license-status-and-contributing)
 
 <a name="why"></a>
 
@@ -427,8 +428,6 @@ You should take into consideration the following advice:
   but it has not been reviewed.
 
 <a name="notes-and-todos"></a>
-
-
 # Notes and Todos
 
 * Lockdown daemon should verify public keys somehow
@@ -436,3 +435,17 @@ You should take into consideration the following advice:
   windows and macos
 * Currently no easy way to change the password of a private key, although you
   can just decrypt and re-encrypt with the `age` cli (symmetric mode)
+
+# License, status and contributing
+
+Lockdown is released under the [MIT License](LICENSE.txt).
+
+This is a personal project, designed and maintained for my own needs. It's
+provided AS IS, in the hopes that it will be useful to someone else.
+
+Due to time constraints and the large amount of resume padding, AI slop and
+supply chain attacks that has been plaguing Open Source, I do not accept bug
+reports, feature requests or contributions for this project.
+
+If you find this project useful and would like to see it grow into something
+bigger and better, feel free to fork and rename the project.
