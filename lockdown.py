@@ -19,8 +19,7 @@ DAEMON_CONF_PATH=os.path.expanduser("~/.config/lockdown/daemon.conf")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=__DESC__,
-        color=False
+        description=__DESC__
     )
     parser.add_argument('--version', action='version', version='%(prog)s v' + __VERSION__)
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Verbose info')
