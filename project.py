@@ -184,8 +184,19 @@ class Project:
         logger.info("Using public key '%s' (%s)", self.pub_key_path, fingerprint.upper()[0:16])
 
         for lock_file in self.lock_files:
+            # When globbing is used, we don't know the original filenames, so
+            # we just assume any ".age" file is a locked file. Strip that
+            # extension from it, and then below we reconstruct the unlocked and
+            # locked paths.
+            if lock_file.endswith(".age"):
+                lock_file = lock_file[:-4]
+
             path_decrypted = os.path.join(self.base_dir, f"{lock_file}")
             path_encrypted = os.path.join(self.base_dir, f"{lock_file}.age")
+
+            if os.path.isdir(lock_file):
+                logger.warning(f"'{lock_file}' is a directory. Skipping")
+                continue
 
             if os.path.exists(path_encrypted):
                 logger.warning(f"'{lock_file}' already locked. Skipping")
@@ -217,8 +228,19 @@ class Project:
         priv_key = self.decrypt_priv_key()
 
         for lock_file in self.lock_files:
+            # When globbing is used, we don't know the original filenames, so
+            # we just assume any ".age" file is a locked file. Strip that
+            # extension from it, and then below we reconstruct the unlocked and
+            # locked paths.
+            if lock_file.endswith(".age"):
+                lock_file = lock_file[:-4]
+
             path_decrypted = os.path.join(self.base_dir, f"{lock_file}")
             path_encrypted = os.path.join(self.base_dir, f"{lock_file}.age")
+
+            if os.path.isdir(lock_file):
+                logger.warning(f"'{lock_file}' is a directory. Skipping")
+                continue
 
             if not os.path.exists(path_encrypted):
                 print(f"'{lock_file}' not locked. Skipping")
